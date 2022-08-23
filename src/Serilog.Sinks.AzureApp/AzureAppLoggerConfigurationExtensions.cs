@@ -28,7 +28,7 @@ namespace Serilog
     /// </summary>
     public static class TraceLoggerConfigurationExtensions
     {
-        const string DefaultOutputTemplate = "{Message}{NewLine}{Exception}";
+        private const string DefaultOutputTemplate = "{Message}{NewLine}{Exception}";
 
         /// <summary>
         /// Write log events to the Azure Diagnostic Application Log/>.

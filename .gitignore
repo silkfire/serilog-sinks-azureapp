@@ -1,2 +1,7 @@
-[Bb]in/
-[Oo]bj/
+*.suo
+*.user
+_ReSharper.*
+.vs
+.vscode
+bin
+obj

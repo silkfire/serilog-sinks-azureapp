@@ -12,45 +12,44 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.IO;
+using Microsoft.Extensions.Logging;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting;
-using Microsoft.Extensions.Logging;
+
+using System;
+using System.Collections.Concurrent;
+using System.IO;
 
 namespace Serilog.Sinks.AzureApp
 {
-    class AzureAppSink : ILogEventSink
+    internal class AzureAppSink : ILogEventSink
     {
         /// <summary>
         /// Our very own Microsoft.Extensions.LoggerFactory, this is where we'll send Serilog events so that Azure can pick up the logs.
         /// We expect that Serilog has replaced this in the app's services.
         /// </summary>
-        static ILoggerFactory CoreLoggerFactory { get; } = LoggerFactory.Create(builder => builder.AddAzureWebAppDiagnostics());
+        private static ILoggerFactory CoreLoggerFactory { get; } = LoggerFactory.Create(builder => builder.AddAzureWebAppDiagnostics());
 
         /// <summary>
         /// The Microsoft.Extensions.LoggerFactory implementation of CreateLogger(string category) uses lock(_sync) before looking in its dictionary.
         /// We'll use our own ConcurrentDictionary for performance, since we lookup the category on every log write.
         /// </summary>
-        readonly ConcurrentDictionary<string, Microsoft.Extensions.Logging.ILogger> loggerCategories = new ConcurrentDictionary<string, Microsoft.Extensions.Logging.ILogger>();
+        private readonly ConcurrentDictionary<string, Microsoft.Extensions.Logging.ILogger> loggerCategories = new ConcurrentDictionary<string, Microsoft.Extensions.Logging.ILogger>();
 
-        readonly ITextFormatter textFormatter;
+        private readonly ITextFormatter _textFormatter;
 
         public AzureAppSink(ITextFormatter textFormatter)
         {
-            this.textFormatter = textFormatter ?? throw new ArgumentNullException(nameof(textFormatter));
+            _textFormatter = textFormatter ?? throw new ArgumentNullException(nameof(textFormatter));
         }
 
         public void Emit(LogEvent logEvent)
         {
-            if (logEvent == null) 
-                throw new ArgumentNullException(nameof(logEvent));
+            if (logEvent == null) throw new ArgumentNullException(nameof(logEvent));
            
             var sr = new StringWriter();
-            textFormatter.Format(logEvent, sr);
+            _textFormatter.Format(logEvent, sr);
             var text = sr.ToString().Trim();
 
             var category = logEvent.Properties.TryGetValue("SourceContext", out var value) ? value.ToString() : "";
@@ -77,7 +76,7 @@ namespace Serilog.Sinks.AzureApp
                     logger.LogTrace(text);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
         }
     }
