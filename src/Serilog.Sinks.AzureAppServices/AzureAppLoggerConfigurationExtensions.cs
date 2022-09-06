@@ -1,4 +1,4 @@
-// Copyright 2013-2018 Serilog Contributors
+// Copyright 2013-2022 Serilog Contributors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,26 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using Serilog.Configuration;
-using Serilog.Core;
-using Serilog.Events;
-using Serilog.Formatting.Display;
-using Serilog.Sinks.AzureApp;
-using Serilog.Formatting;
-using Serilog.Formatting.Json;
+
 
 namespace Serilog
 {
+    using Sinks.AzureAppServices;
+
+    using Configuration;
+    using Core;
+    using Events;
+    using Formatting.Display;
+    using Formatting;
+    using Formatting.Json;
+
+    using System;
+
     /// <summary>
-    /// Adds the WriteTo.AzureApp() extension method to <see cref="LoggerConfiguration"/>.
+    /// Adds the <c>Serilog.WriteTo.AzureAppServices()</c> extension method to <see cref="LoggerConfiguration"/>.
     /// </summary>
     public static class TraceLoggerConfigurationExtensions
     {
         private const string DefaultOutputTemplate = "{Message}{NewLine}{Exception}";
 
         /// <summary>
-        /// Write log events to the Azure Diagnostic Application Log/>.
+        /// Write log events to the Azure Web Apps diagnostics log.
         /// </summary>
         /// <param name="sinkConfiguration">Logger sink configuration.</param>
         /// <param name="restrictedToMinimumLevel">The minimum level for
@@ -40,9 +44,9 @@ namespace Serilog
         /// to be changed at runtime.</param>
         /// <param name="outputTemplate">A message template describing the format used to write to the sink.
         /// the default is "{Message}{NewLine}{Exception}".</param>
-        /// <param name="formatProvider">Supplies culture-specific formatting information, or null.</param>
+        /// <param name="formatProvider">Supplies culture-specific formatting information, or <see langword="null"/>.</param>
         /// <returns>Configuration object allowing method chaining.</returns>
-        public static LoggerConfiguration AzureApp(
+        public static LoggerConfiguration AzureAppServices(
             this LoggerSinkConfiguration sinkConfiguration,
             LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
             string outputTemplate = DefaultOutputTemplate,
@@ -51,12 +55,14 @@ namespace Serilog
         {
             if (sinkConfiguration == null) throw new ArgumentNullException(nameof(sinkConfiguration));
             if (outputTemplate == null) throw new ArgumentNullException(nameof(outputTemplate));
+
             var formatter = new MessageTemplateTextFormatter(outputTemplate, formatProvider);
-            return AzureApp(sinkConfiguration, formatter, restrictedToMinimumLevel, levelSwitch);
+
+            return AzureAppServices(sinkConfiguration, formatter, restrictedToMinimumLevel, levelSwitch);
         }
 
         /// <summary>
-        /// Write log events to the Azure Diagnostic Application Log/>.
+        /// Write log events to the Azure Web Apps diagnostics log.
         /// </summary>
         /// <param name="sinkConfiguration">Logger sink configuration.</param>
         /// <param name="restrictedToMinimumLevel">The minimum level for
@@ -67,7 +73,7 @@ namespace Serilog
         /// e.g. <see cref="JsonFormatter"/> to produce JSON output. To customize the text layout only, use the
         /// overload that accepts an output template instead.</param>
         /// <returns>Configuration object allowing method chaining.</returns>
-        public static LoggerConfiguration AzureApp(
+        public static LoggerConfiguration AzureAppServices(
             this LoggerSinkConfiguration sinkConfiguration,
             ITextFormatter formatter,
             LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
@@ -75,7 +81,8 @@ namespace Serilog
         {
             if (sinkConfiguration == null) throw new ArgumentNullException(nameof(sinkConfiguration));
             if (formatter == null) throw new ArgumentNullException(nameof(formatter));
-            return sinkConfiguration.Sink(new AzureAppSink(formatter), restrictedToMinimumLevel, levelSwitch);
+
+            return sinkConfiguration.Sink(new AzureAppServicesSink(formatter), restrictedToMinimumLevel, levelSwitch);
         }
     }
 }
